@@ -6,7 +6,7 @@ import java.lang.Math;
 */
 public class Xiao
 {
-    private static String[] _termsTable =
+    public static final String[] DefaultTermsTable =
     {
     	" ", "the", "e", "t", "a", "of", "o", "and", "i", "n", "s", "e ", "r", " th",
             " t", "in", "he", "th", "h", "he ", "to", "\r\n", "l", "s ", "d", " a", "an",
@@ -31,55 +31,89 @@ public class Xiao
             "e, ", " it", "whi", " ma", "ge", "x", "e c", "men", ".com"
     };
 
-    private static byte[][] _termsTableBytes;
-
-    private static byte[][] _hashTable;
-
-    private static int _maxTermSize;
-    private static int _maxVerbatimLen;
-    private static int MAX_BYTE_SIZE=255;
-
-    public XiaoMime() throws Exception
+     private static final String[] MimeTermsTable =
     {
-    	if(_hashTable==null)
-    	{
-	        if (_termsTable.length + 8 > MAX_BYTE_SIZE)
-	            throw new Exception("Too many terms defined");
-	
-	        _termsTableBytes = new byte[_termsTable.length][];
-	        _maxVerbatimLen = MAX_BYTE_SIZE - _termsTable.length;
-	        _hashTable = new byte[MAX_BYTE_SIZE][];
-	        for (int i = 0; i < _termsTable.length; i++)
-	        {
-	            byte[] bytes = _termsTable[i].getBytes("UTF-8");
-	            if (bytes.length > MAX_BYTE_SIZE)
-	                throw new Exception("Term " + _termsTable[i] + " is too big");
-	            _termsTableBytes[i] = bytes;
-	            byte[] buffer = new byte[bytes.length + 2];// 1 for size, 1 for index
-	            buffer[0] = (byte)bytes.length;
-	            buffer[buffer.length - 1] = (byte)i;
-	            System.arraycopy(bytes, 0, buffer, 1, bytes.length);
-	            _maxTermSize = Math.max(_maxTermSize, bytes.length);
-	
-	            int h = bytes[0] << 3;
-	            addToHash(h, buffer);
-	            if (bytes.length == 1)
-	                continue;
-	            h += bytes[1];
-	            addToHash(h, buffer);
-	            if (bytes.length == 2)
-	                continue;
-	            h ^= bytes[2];
-	            addToHash(h, buffer);
-	        }
-	        byte[] empty = new byte[0];
-	
-	        for (int i = 0; i < _hashTable.length; i++)
-	        {
-	            if (_hashTable[i] == null)
-	                _hashTable[i] = empty;
-	        }
-    	}
+        "doc", "text/plain", "text/html", "text/xml", "text/css",
+        "application/javascript", "application/json", "application/xhtml+xml", "application/ld+json",
+        "application/vnd.", "application/x-",
+        "text/", "application/", "+xml", "+json", "soap",
+        "text", "plain", "xml", "json-ld", "json",
+        "html", "xhtml", "vnd.", "vnd", "x-",
+        "audio/", "midi", "mp3", "mp4", "aac", "wav", "mpeg",
+        "image/", "jpeg",   "jpg", "gif", "png", 
+        "video/", "h261", "h263","h264","m4v",
+        "multipart/", "model/", "message", "patch", "calendar", 
+        "ms-", "zip", "n3", "turtle",
+        "javascript", "java", "atom", "rss", "geo", "pdf", "css",
+        "/", "+", "ea", "ed", "oasis", "ss", "io", "ia", "on", "ml", "dvb", "etsi", "fuji"
+    };
+
+    private byte[][] _termsTableBytes;
+
+    private byte[][] _hashTable;
+
+    private String[] _termsTable;
+
+    private int _maxTermSize;
+    private int _maxVerbatimLen;
+    private int MAX_BYTE_SIZE=255;
+
+    public static Xiao Create(string[] termsTable) throws Exception
+    {
+        return new Xiao(termsTable);
+    }
+
+
+    public static Xiao CreateDefault() throws Exception
+    {
+        return new Xiao(DefaultTermsTable);
+    }
+
+    public static Xiao CreateMime() throws Exception
+    {
+        return new Xiao(MimeTermsTable);
+    }
+
+    private Xiao(string[] termsTable) throws Exception
+    {
+        _termsTable = termsTable;
+
+        if (_termsTable.length + 8 > MAX_BYTE_SIZE)
+            throw new Exception("Too many terms defined");
+
+        _termsTableBytes = new byte[_termsTable.length][];
+        _maxVerbatimLen = MAX_BYTE_SIZE - _termsTable.length;
+        _hashTable = new byte[MAX_BYTE_SIZE][];
+        for (int i = 0; i < _termsTable.length; i++)
+        {
+            byte[] bytes = _termsTable[i].getBytes("UTF-8");
+            if (bytes.length > MAX_BYTE_SIZE)
+                throw new Exception("Term " + _termsTable[i] + " is too big");
+            _termsTableBytes[i] = bytes;
+            byte[] buffer = new byte[bytes.length + 2];// 1 for size, 1 for index
+            buffer[0] = (byte)bytes.length;
+            buffer[buffer.length - 1] = (byte)i;
+            System.arraycopy(bytes, 0, buffer, 1, bytes.length);
+            _maxTermSize = Math.max(_maxTermSize, bytes.length);
+
+            int h = bytes[0] << 3;
+            addToHash(h, buffer);
+            if (bytes.length == 1)
+                continue;
+            h += bytes[1];
+            addToHash(h, buffer);
+            if (bytes.length == 2)
+                continue;
+            h ^= bytes[2];
+            addToHash(h, buffer);
+        }
+        byte[] empty = new byte[0];
+
+        for (int i = 0; i < _hashTable.length; i++)
+        {
+            if (_hashTable[i] == null)
+                _hashTable[i] = empty;
+        }
     }
 
     private void addToHash(int hash, byte[] buffer)
