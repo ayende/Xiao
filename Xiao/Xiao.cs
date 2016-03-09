@@ -147,20 +147,20 @@ namespace Xiao
                     while (pos + 1 // has actual data, not length info
                         < slot.Length)
                     {
-                        var termLegnth = slot[pos];
-                        if (termLegnth != size ||
+                        var termLength = slot[pos];
+                        if (termLength != size ||
                             BufferEquals(slot, pos + 1, input, i, size) == false)
                         {
-                            pos += termLegnth + 2;// skip len of string, the size and the index
+                            pos += termLength + 2;// skip len of string, the size and the index
                             continue;
                         }
                         if (verbatimLength > 0)
                         {
                             Flush(input, output, ref verbatimStart, ref verbatimLength, ref outPos);
                         }
-                        output[outPos++] = slot[termLegnth + pos + 1];// get the index to write there
-                        verbatimStart = i + termLegnth;
-                        i += termLegnth - 1;// skip the length we just compressed
+                        output[outPos++] = slot[termLength + pos + 1];// get the index to write there
+                        verbatimStart = i + termLength;
+                        i += termLength - 1;// skip the length we just compressed
                         foundMatch = true;
                         break;
                     }
